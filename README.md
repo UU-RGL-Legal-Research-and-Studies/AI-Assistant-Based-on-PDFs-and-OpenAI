@@ -24,9 +24,9 @@ The code for the project has been written with ChatGPT. The code used is in Pyth
 1. Run the script `main.py`:
    python main.py
 2. The Gradio interface will launch in your default web browser.
-3. Enter the path to the folder containing your PDF legal documents in the "Folder Path" field.
+3. Enter the path to the folder containing your PDF documents in the "Folder Path" field.
 4. Enter your query in the "Query" field.
-5. Click "Submit" to get the answer to your legal question.
+5. Click "Submit" to get the answer to your question.
 
 ## Note
 
