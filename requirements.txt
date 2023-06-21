@@ -1,0 +1,4 @@
+os
+pinecone
+langchain
+gradio
