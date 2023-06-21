@@ -1,0 +1,80 @@
+# 1. Modules
+import os
+import pinecone
+from langchain.document_loaders import PyPDFLoader
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores import Pinecone
+import gradio as gr
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
+
+# 2. Load data and cut into chunks (automatically done with langchain)
+def load_data(folder_path):
+    texts = []
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.pdf'):
+            pdf_path = os.path.join(folder_path, filename)
+            loader = PyPDFLoader(pdf_path)
+            data = loader.load()
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+            file_texts = text_splitter.split_documents(data)
+            texts.extend(file_texts)
+    return texts
+
+# 3. Create embeddings and initialise Pinecone
+OPENAI_API_KEY = os.environ.get('Open_AI_Key')
+PINECONE_API_KEY = os.environ.get('Pinecone_API_Key')
+PINECONE_API_ENV = os.environ.get('Pinecone_API_Env')
+
+embeddings = OpenAIEmbeddings(
+    openai_api_key=OPENAI_API_KEY
+)
+
+pinecone.init(
+    api_key=PINECONE_API_KEY,
+    environment=PINECONE_API_ENV
+)
+index_name = "langchain1"
+
+def create_vector_store(texts):
+    vector_store = Pinecone.from_texts([t.page_content for t in texts], embeddings, index_name=index_name)
+    return vector_store
+
+def retrieve_answer(query, vector_store, llm):
+    qa = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type="stuff",
+        retriever=vector_store.as_retriever()
+    )
+    answer = qa(query)
+    result = answer["result"]  # Access the value of the "result" key
+    ending_message = "\n\nHet is belangrijk op te merken dat dit antwoord afkomstig is van een chatbot. Het is verstandig om juridisch advies in te winnen bij een gespecialiseerde jurist om de vraag in kwestie te beantwoorden."
+    result += ending_message
+    return result
+
+# 4. Create chatbot
+
+llm = ChatOpenAI(
+    openai_api_key=OPENAI_API_KEY,
+    model_name='gpt-3.5-turbo',
+    temperature=0.0,
+    max_tokens=4000
+)
+
+# 5. Create Gradio interface
+folder_path = gr.inputs.Textbox(label="Folder Path")
+input_text = gr.inputs.Textbox(label="Query")
+output_text = gr.outputs.Textbox(label="Answer")
+
+def chatbot_interface(folder_path, query):
+    raw_folder_path = r"{}".format(folder_path)  # Convert to raw string literal
+    texts = load_data(raw_folder_path)
+    vector_store = create_vector_store(texts)
+    answer = retrieve_answer(query, vector_store, llm)
+    return answer
+
+interface = gr.Interface(fn=chatbot_interface, inputs=[folder_path, input_text], outputs=output_text, title="AI Legal Assistant")
+
+# 6. Start the Gradio interface
+interface.launch(share=True)
