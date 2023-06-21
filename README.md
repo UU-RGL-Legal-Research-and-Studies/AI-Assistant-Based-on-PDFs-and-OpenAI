@@ -2,7 +2,7 @@
 
 This project is a chatbot that can answer questions based on PDFs provided by the user. It uses OpenAI's GPT-3.5-turbo model for generating responses. The chatbot interface is built using Gradio. A so-called Pinecone database is in place, which contains embeddings of the PDFs provided by the users (semantic meaning converted to numbers in the database). 
 
-The current code has as its starting position that the chatbot functions as an AI Legal Assistant. This can be edited by the user in order to personalize the chatbot for own needs. 
+The current code has as its starting position that the chatbot functions as an AI Legal Assistant. This can be edited by the user in order to personalize the chatbot for its own needs. 
 
 The code for the project has been written with ChatGPT. The code used is in Python.
 
