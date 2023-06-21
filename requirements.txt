@@ -1,3 +1,4 @@
 pinecone-client
 langchain
 gradio
+openai
