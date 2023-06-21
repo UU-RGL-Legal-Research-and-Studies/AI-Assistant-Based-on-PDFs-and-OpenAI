@@ -1,4 +1,3 @@
-os
-pinecone
+pinecone-client
 langchain
 gradio
